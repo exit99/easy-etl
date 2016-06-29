@@ -7,12 +7,18 @@ In majority of ETL processes many of the same techniques are used to process the
 Easy-etl abstracts these processes into a simple `ETLProcess` class which allows developrs to avoid wrting the same code for 
 a majority of their ETL processes.
 
+Easy-etl is powered by the `dataset` python package (which is powered my `sqlalchemy`) and the `ETLProcess` class requries
+dataset connections to your source and target databases.
+
+Easy-etl is a pipeline. The `extract` and `transform` functions called on the `ETLProcess` stage tasks in the pipeline. 
+The pipeline is executed on the `load` call.
+
+*"Any processing that can be done on the SQL level, should be done at the SQL level." - easy-etl philosophy*
+
+
 ## Quickstart
 
 `pip install easy-etl`
-
-Easy-etl is powered by the `dataset` python package (which is powered my `sqlalchemy`) and the `ETLProcess` class requries
-dataset connections to your source and target databases.
 
 ```python
 import dataset
@@ -22,24 +28,9 @@ src_db = dataset.connect("sqlite:///src.db")
 target_db = dataset.connect("sqlite:///target.db")
 
 process = ETLProcess(src_db, target_db, "target_tablename")
-```
-
-*"Any processing that can be accomplished on the SQL level, should be accomplished at the SQL level." - easy-etl philosophy*
-
-Easy-etl is a pipeline. The `extract` and `transform` functions called on the `ETLProcess` stage tasks in the pipeline. 
-The pipeline is executed ont the `load` call.
-
-```python
-# Will execute query.sql file on src_db
 process.extract("query.sql")  
-
-# Replaces null columns in name column with "Unknown".
 process.transform("name").default("Unknown")  
-
-# Will convert data from state and country columns to upper case.
 process.transform("state", "country").upper()  
-
-# Starts the pipeline writing data to the target_db in the target_tablename.
 process.load()
 ```
 
@@ -200,9 +191,19 @@ You can disable this functionality via the `load` function's `safe` kwarg.
 
 `process.load(safe=True)`
 
+**Sqlite does not support dropping columns**
+
 ### Ignoring specific fields
 
 Usually when linking related tables the field used to link the tables is not needed in the final
 table schema.  These fields can be ignored when loading the data into the target database.
 
 `process.ignore("field1", "field2")`
+
+
+# Developers
+
+## Running the tests
+
+1. `vagrant up`
+2. `tox`

@@ -9,10 +9,7 @@ class ETLProcess(object):
         self.read_db = read_db
         self.write_db = write_db
         self.write_table_name = write_table_name
-        self.transform_pipeline = TransformPipeline()
-        self.links = []
-        self._middleware = []
-        self._ignored = []
+        self._reset()
 
     def __unicode__(self):
         return "ETLProcess: (table: {})".format(self.write_table_name)
@@ -34,7 +31,8 @@ class ETLProcess(object):
         method, args = self.extract_method
         if os.getenv("VERBOSE"):
             print("Querying data...")
-        results = self._apply_middleware(method(*args))
+        results = method(*args)
+        results = self._apply_middleware(results)
         if results:
             if os.getenv("VERBOSE"):
                 print("Loading {}".format(self.write_table_name))
@@ -42,6 +40,7 @@ class ETLProcess(object):
 
             table = self.write_db[self.write_table_name]
             self._write_rows(table, results, upsert_fields, safe)
+        self._reset()
 
     def extract_override(self, f):
         self.extract_method = (f, tuple())
@@ -59,6 +58,13 @@ class ETLProcess(object):
 
     def ignore(self, *args):
         self._ignored += args
+
+    def _reset(self):
+        self.transform_pipeline = TransformPipeline()
+        self.transform_pipeline._reset()
+        self.links = []
+        self._middleware = []
+        self._ignored = []
 
     def _apply_middleware(self, results):
         for middleware in self._middleware:
@@ -107,12 +113,11 @@ class ETLProcess(object):
             closest_method = options.get('closest_method')
             if closest_method:
                 query = "SELECT id FROM {0} WHERE {1} " + closest_method + " \
-                    {2} ORDER BY {1}"
+                    {2} ORDER BY {1};"
             else:
-                query = "SELECT id FROM {0} WHERE {1} = {2}"
-            res = self.write_db.query(query.format(
-                table_name, child_field, row_data[field]
-            ))
+                query = "SELECT id FROM {0} WHERE {1} = {2};"
+            query = query.format(table_name, child_field, row_data[field])
+            res = self.write_db.query(query)
             try:
                 id = next(res)['id']
             except StopIteration:
@@ -134,12 +139,14 @@ def func(data):
 
 
 class TransformPipeline(object):
-    fields = []
-    pipeline = {}
     builtin_methods = {
         'default': default,
         'func': func,
     }
+
+    def __init__(self):
+        self.fields = []
+        self.pipeline = {}
 
     def __unicode__(self):
         return "TransformPipeline (fields: {})".format(self.fields)
@@ -166,3 +173,7 @@ class TransformPipeline(object):
                 f = self.builtin_methods[method](data)
             data = f(*args, **kwargs)
         return data
+
+    def _reset(self):
+        self.fields = []
+        self.pipeline = {}

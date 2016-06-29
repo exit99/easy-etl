@@ -1,2 +1,8 @@
 *.pyc
 *.db
+.bundle
+.tox
+.cache
+.vagrant
+easy_etl.egg-info
+
