@@ -205,5 +205,6 @@ table schema.  These fields can be ignored when loading the data into the target
 
 ## Running the tests
 
-1. `vagrant up`
-2. `tox`
+1. `pip install -r reqs.txt`
+2. `vagrant up`
+3. `tox`
