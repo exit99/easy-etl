@@ -61,6 +61,14 @@ def custom_extract():
 process.extract_override(custom_extract)
 ```
 
+### Type conversions
+
+By default all types will be strings.  To force a type conversion pass the column name
+along with the desired type in a dictionary via the types kwarg.
+
+`process.extract(sql, types={"column1": float, "column2": int})`
+
+
 ### Formatting extracted data with middleware
 
 Sometimes the data returned by the extract function isn't in the exact format we need.
