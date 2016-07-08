@@ -162,3 +162,12 @@ def test_link_closest(process):
 
     data = [i for i in process.write_db[process.write_table_name].all()]
     assert [i['my_i'] for i in data] == ['1', '2', None, '1']
+
+
+def test_type(process):
+    t = float
+    process.extract("SELECT age FROM mytable;", types={"age": t})
+    process.load()
+    data = [i for i in process.write_db[process.write_table_name].all()]
+    for i in data:
+        assert type(i['age']) is t

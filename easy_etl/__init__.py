@@ -14,7 +14,8 @@ class ETLProcess(object):
     def __unicode__(self):
         return "ETLProcess: (table: {})".format(self.write_table_name)
 
-    def extract(self, sql, write_pk_field=None):
+    def extract(self, sql, write_pk_field=None, types=None):
+        self.types = types
         if sql.endswith('.sql'):
             with open(sql, 'r') as f:
                 sql = f.read()
@@ -65,6 +66,7 @@ class ETLProcess(object):
         self.links = []
         self._middleware = []
         self._ignored = []
+        self.types = None
 
     def _apply_middleware(self, results):
         for middleware in self._middleware:
@@ -86,9 +88,7 @@ class ETLProcess(object):
     def _write_rows(self, table, rows, upsert_fields, safe=False):
         dropped = False
         for row in rows:
-            row_data = self.transform_pipeline.transform(row)
-            row_data = self._make_links(row_data)
-            row_data = self._remove_ignored(row_data)
+            row_data = self._update_row(row)
             if upsert_fields:
                 table.upsert(row_data, upsert_fields)
             else:
@@ -96,6 +96,13 @@ class ETLProcess(object):
             if not dropped and not safe:
                 self._drop_old_columns(table, row_data.keys())
                 dropped = True
+
+    def _update_row(self, row):
+        row_data = self._type_format(row)
+        row_data = self.transform_pipeline.transform(row)
+        row_data = self._make_links(row_data)
+        row_data = self._remove_ignored(row_data)
+        return row_data
 
     def _remove_ignored(self, row):
         for field in self._ignored:
@@ -124,6 +131,12 @@ class ETLProcess(object):
                 id = None
             row_data[options.get("name", field)] = id
         return row_data
+
+    def _type_format(self, row):
+        if self.types:
+            for k, type_ in self.types.items():
+                row[k] = type_(row[k])
+        return row
 
 
 def default(data):
