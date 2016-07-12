@@ -3,7 +3,7 @@ from setuptools import setup
 if __name__ == '__main__':
     setup(
         name='easy-etl',
-        version='0.2.0',
+        version='0.2.1,
         author='Zach Kazanski',
         author_email='kazanski.zachary@gmail.com',
         description='A lightweight data cube pipeline for ETL processes in python.',

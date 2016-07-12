@@ -159,13 +159,16 @@ process.link("parent_field", "child_table", "child_field", name="column_name")
 Sometimes the link cannot be exact.  This is usually the case when dealing with a date dimension.
 Our date dimension may have rows with July 1st and July 2nd at 00:00:00.
 The table we are creating may have an entry that was placed at July 1st 12:45:38 and we want to
-link it to the July 1st row of our date dimension.  This can be done easyily as well.
+link it to the July 1st row of our date dimension.  This can be done easily as well.
 
 ```python
 # >= is the default method.
-process.link_closest("parent_field", "child_table", "child_field",
+process.link_closest("parent_field", "target_field", "child_table", "child_field",
                      name="column_name", method=">=")
 ```
+
+Parent field is the value in the fact table that correlates with the child_table's child_field.
+Target field is the field we want to compare when linking.
 
 ## Loading Data
 

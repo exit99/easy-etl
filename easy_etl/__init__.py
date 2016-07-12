@@ -46,12 +46,13 @@ class ETLProcess(object):
     def extract_override(self, f):
         self.extract_method = (f, tuple())
 
-    def link(self, field, table_name, child_field, name=None):
-        self.links.append((field, table_name, child_field, {"name": name}))
+    def link(self, field, target, table_name, child_field, name=None):
+        self.links.append(
+            (field, target, table_name, child_field, {"name": name}))
 
-    def link_closest(self, field, table_name, child_field, name=None,
+    def link_closest(self, field, target, table_name, child_field, name=None,
                      method=">="):
-        self.links.append((field, table_name, child_field,
+        self.links.append((field, target, table_name, child_field,
                            {'closest_method': method, 'name': name}))
 
     def middleware(self, f):
@@ -116,14 +117,16 @@ class ETLProcess(object):
                 table.drop_column(column)
 
     def _make_links(self, row_data):
-        for field, table_name, child_field, options in self.links:
+        for field, target, table_name, child_field, options in self.links:
             closest_method = options.get('closest_method')
             if closest_method:
                 query = "SELECT id FROM {0} WHERE {1} " + closest_method + " \
                     {2} ORDER BY {1};"
+                if closest_method.startswith("<"):
+                    query = query[:-1] + " DESC;"
             else:
                 query = "SELECT id FROM {0} WHERE {1} = {2};"
-            query = query.format(table_name, child_field, row_data[field])
+            query = query.format(table_name, child_field, row_data[target])
             res = self.write_db.query(query)
             try:
                 id = next(res)['id']
