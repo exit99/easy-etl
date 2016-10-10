@@ -28,7 +28,7 @@ class ETLProcess(object):
         self.transform_pipeline.fields = fields
         return self.transform_pipeline
 
-    def load(self, upsert_fields=None, safe=False):
+    def load(self, upsert_fields=None, ensure=None, safe=False):
         method, args = self.extract_method
         if os.getenv("VERBOSE"):
             print("Querying data...")
@@ -40,7 +40,7 @@ class ETLProcess(object):
                 results = tqdm(results)
 
             table = self.write_db[self.write_table_name]
-            self._write_rows(table, results, upsert_fields, safe)
+            self._write_rows(table, results, upsert_fields, ensure, safe)
         self._reset()
 
     def extract_override(self, f):
@@ -86,14 +86,14 @@ class ETLProcess(object):
             last_pk = next(rows)['max'] or last_pk
         return self.read_db.query(sql.format(last_pk))
 
-    def _write_rows(self, table, rows, upsert_fields, safe=False):
+    def _write_rows(self, table, rows, upsert_fields, ensure=None, safe=False):
         dropped = False
         for row in rows:
             row_data = self._update_row(row)
             if upsert_fields:
-                table.upsert(row_data, upsert_fields)
+                table.upsert(row_data, upsert_fields, ensure=None)
             else:
-                table.insert(row_data)
+                table.insert(row_data, ensure=ensure)
             if not dropped and not safe:
                 self._drop_old_columns(table, row_data.keys())
                 dropped = True

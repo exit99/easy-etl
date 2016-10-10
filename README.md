@@ -180,7 +180,7 @@ All fields loaded with easy-etl automatically receive an auto-incremented surrog
 ### Inserting data
 
 By default `load` will insert all extracted data as new entries.  This is perfect for periodic
-snapshot fact tables.
+snapshot fact tables. Use `ensure=True` kwarg if new columns are going to be added.
 
 `process.load()`
 
@@ -190,9 +190,9 @@ Sometime we don't want to insert new data with every load.  Sometimes we want to
 tables into a table.   Say we have a client dimension where we want to update any client
 that has recently changed the location data but we also want to add any new clients to our table.
 That is also easy.  We just pass the fields we want to match for updates as a list to the
-`upsert_fields` kwarg of the load function.
+`upsert_fields` kwarg of the load function.  Use `ensure=True` kwarg if new columns are going to be added.
 
-`process.load(upsert_fields=["client_id"])`
+`process.load(upsert_fields=["client_id"], ensure=True)`
 
 ### Dropping unused columns
 
