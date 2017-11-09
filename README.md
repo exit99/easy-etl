@@ -1,7 +1,9 @@
 # easy-etl
 
-Easy-etl is a lightweight python pipeline designed to make transforming database entries into data cubes easy.
-It was made to power a majority of the ETL processes in the enterprise datawarehouse at Hivelocity.
+Not all ETL processes need complicated task managment and streaming functionality.  
+
+Easy-etl is a simple, no frills, etl package to make transforming small to medium sized database entries into data cubes easy.
+It was made to power a majority of the ETL processes in the datawarehouse at Hivelocity.
 
 In majority of ETL processes many of the same techniques are used to process the data, such as linking fact and dimension tables.
 Easy-etl abstracts these processes into a simple `ETLProcess` class which allows developrs to avoid wrting the same code for 
