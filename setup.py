@@ -12,7 +12,7 @@ if __name__ == '__main__':
         include_package_data=True,
         install_requires=[
             'dataset==0.6.4',
-            'tqdm==4.7.6',
+            'tqdm==4.66.3',
         ],
         classifiers=[
             'Programming Language :: Python',
